@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>La Contabilidad de Elohim — Sistema VEN-NIF</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased">
+  <header class="no-print bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
+    <div class="px-3 sm:px-4 py-2 flex flex-wrap justify-between items-center text-sm gap-2">
+      <div class="flex items-center gap-3">
+        <button id="btnMenu" class="md:hidden text-amber-400 text-xl" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
+        <i class="fa-solid fa-book-bookmark text-amber-400 text-xl"></i>
+        <span class="font-bold text-base sm:text-lg tracking-wide text-amber-400">La Contabilidad de Elohim</span>
+        <span class="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 hidden sm:inline-block">VEN-NIF / SENIAT</span>
+      </div>
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        <div class="flex items-center gap-1">
+          <label class="text-slate-400 hidden sm:inline"><i class="fa-solid fa-building mr-1"></i>Empresa:</label>
+          <select id="empresaSelect" class="bg-slate-800 border border-slate-700 text-white text-xs rounded px-2 py-1">
+            <option value="1">Inversiones Elohim, C.A. (J-30596841-2)</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded border border-slate-700">
+          <i class="fa-solid fa-coins text-amber-400"></i>
+          <span class="font-semibold">BCV: <span id="tcLabel" class="text-emerald-400 font-mono">900.00</span> .Bs</span>
+        </div>
+        <button id="btnTutorial" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded font-semibold" title="Repetir tutorial">
+          <i class="fa-solid fa-graduation-cap"></i> <span class="hidden sm:inline">Tutorial</span>
+        </button>
+        <button id="btnExportJSON" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded font-semibold" title="Respaldo JSON">
+          <i class="fa-solid fa-database"></i> <span class="hidden sm:inline">JSON</span>
+        </button>
+        <label class="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded cursor-pointer font-semibold" title="Restaurar JSON">
+          <i class="fa-solid fa-upload"></i> <span class="hidden sm:inline">Cargar</span>
+          <input type="file" id="fileImportJSON" accept=".json" class="hidden">
+        </label>
+        <button id="btnExportHTML" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2 py-1 rounded" title="Descargar sistema">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">.HTML</span>
+        </button>
+        <button id="btnReset" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded font-semibold" title="Resetear datos">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+  <div class="flex-1 flex overflow-hidden relative">
+    <div id="sidebarBackdrop" class="hidden fixed inset-0 bg-black/50 z-20 md:hidden"></div>
+    <aside id="sidebar" class="no-print w-64 bg-slate-800 text-slate-300 flex flex-col border-r border-slate-700 flex-shrink-0 fixed md:static inset-y-0 left-0 z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-200 top-[49px] md:top-auto h-[calc(100vh-49px)] md:h-auto">
+      <nav class="flex-1 overflow-y-auto p-3 space-y-5" id="navMenu"></nav>
+      <div class="p-3 border-t border-slate-700 text-[10px] text-center text-slate-400">
+        Venezuela · .Bs · SENIAT · VEN-NIF · v2.3
+      </div>
+    </aside>
+    <main id="mainContent" class="flex-1 overflow-y-auto bg-slate-50 p-3 sm:p-6">
+      <div id="alertContainer" class="sticky top-0 z-20"></div>
+      <div id="viewContainer"></div>
+    </main>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/plan-cuentas.js"></script>
+  <script src="js/tasas.js"></script>
+  <script src="js/terceros.js"></script>
+  <script src="js/productos.js"></script>
+  <script src="js/presupuestos.js"></script>
+  <script src="js/asientos.js"></script>
+  <script src="js/compras.js"></script>
+  <script src="js/ventas.js"></script>
+  <script src="js/servicios.js"></script>
+  <script src="js/nomina.js"></script>
+  <script src="js/nominaRapida.js"></script>
+  <script src="js/libros.js"></script>
+  <script src="js/cierres.js"></script>
+  <script src="js/seniat.js"></script>
+  <script src="js/estructuraCompras.js"></script>
+  <script src="js/ganancias.js"></script>
+  <script src="js/reportes.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/glosario.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
