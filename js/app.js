@@ -37,52 +37,104 @@ function renderVistaActual() {
   if (fn) fn(cont);
 }
 
+/* ---------- Navegación ---------- */
 function navegar(id) {
   vistaActual = id;
   renderVistaActual();
-  document.getElementById('sidebar')?.classList.remove('open');
-  document.getElementById('sidebarBackdrop')?.classList.add('hidden');
+  cerrarSidebar();
+  // Reset scroll del main
+  const main = document.getElementById('mainContent');
+  if (main) main.scrollTop = 0;
 }
 
+function abrirSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar) return;
+  sidebar.classList.add('open');
+  if (backdrop) backdrop.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.add('hidden');
+  // Solo restaurar scroll si el tutorial no está abierto
+  if (!tutorialActivo) document.body.style.overflow = '';
+}
+
+/* ---------- Menú lateral ---------- */
 function construirMenu() {
   const grupos = {};
   MODULOS.forEach(m => (grupos[m.group] = grupos[m.group] || []).push(m));
+
   document.getElementById('navMenu').innerHTML = Object.entries(grupos).map(([g, items]) => `
     <div>
       <h3 class="text-[11px] uppercase font-semibold text-slate-400 px-3 mb-1">${g}</h3>
       <ul class="space-y-0.5">
-        ${items.map(i => `<li><button onclick="navegar('${i.id}')" class="nav-btn w-full text-left flex items-center px-3 py-1.5 text-xs rounded hover:bg-slate-700 hover:text-white">
-          <i class="fa-solid ${i.icon} w-5"></i> ${i.label}</button></li>`).join('')}
+        ${items.map(i => `
+          <li>
+            <button onclick="navegar('${i.id}')" class="nav-btn w-full text-left flex items-center px-3 py-2 text-xs rounded hover:bg-slate-700 hover:text-white transition-colors">
+              <i class="fa-solid ${i.icon} w-5 flex-shrink-0"></i>
+              <span class="truncate">${i.label}</span>
+            </button>
+          </li>
+        `).join('')}
       </ul>
     </div>
   `).join('');
 }
 
+/* ---------- Bootstrap ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   construirMenu();
+
   const db = getDB();
-  document.getElementById('tcLabel').innerText = (db.historicoTasas[0]?.tasa || 0).toFixed(2);
-  document.getElementById('empresaSelect').value = db.empresaActual;
-  document.getElementById('empresaSelect').addEventListener('change', e => cambiarEmpresa(e.target.value));
-  document.getElementById('btnExportJSON').addEventListener('click', exportarRespaldoJSON);
-  document.getElementById('fileImportJSON').addEventListener('change', importarRespaldoJSON);
-  document.getElementById('btnExportHTML').addEventListener('click', descargarHTML);
-  document.getElementById('btnReset').addEventListener('click', resetearDatos);
-  document.getElementById('btnTutorial').addEventListener('click', () => iniciarTutorial());
-  const sidebar = document.getElementById('sidebar');
+  const tcLabel = document.getElementById('tcLabel');
+  if (tcLabel) tcLabel.innerText = (db.historicoTasas[0]?.tasa || 0).toFixed(2);
+
+  const empresaSelect = document.getElementById('empresaSelect');
+  if (empresaSelect) {
+    empresaSelect.value = db.empresaActual;
+    empresaSelect.addEventListener('change', e => cambiarEmpresa(e.target.value));
+  }
+
+  document.getElementById('btnExportJSON')?.addEventListener('click', exportarRespaldoJSON);
+  document.getElementById('fileImportJSON')?.addEventListener('change', importarRespaldoJSON);
+  document.getElementById('btnExportHTML')?.addEventListener('click', descargarHTML);
+  document.getElementById('btnReset')?.addEventListener('click', resetearDatos);
+  document.getElementById('btnTutorial')?.addEventListener('click', () => iniciarTutorial());
+
+  // Menú móvil
+  const btnMenu = document.getElementById('btnMenu');
   const backdrop = document.getElementById('sidebarBackdrop');
-  document.getElementById('btnMenu').addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-    backdrop.classList.toggle('hidden', !sidebar.classList.contains('open'));
+
+  btnMenu?.addEventListener('click', abrirSidebar);
+  backdrop?.addEventListener('click', cerrarSidebar);
+
+  // Cerrar sidebar con la tecla Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cerrarSidebar();
   });
-  backdrop.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    backdrop.classList.add('hidden');
+
+  // Asegurar que el aside tenga altura correcta al redimensionar
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.remove('open');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (bd) bd.classList.add('hidden');
+      if (!tutorialActivo) document.body.style.overflow = '';
+    }
   });
+
   registrarAuditoria('SISTEMA', 'Carga inicial', `Versión ${CONFIG.VERSION}`);
   navegar('planCuentas');
 });
 
+/* ---------- Descargar HTML limpio ---------- */
 function descargarHTML() {
   const clone = document.documentElement.cloneNode(true);
   clone.querySelectorAll('script[data-bard-client-injected],script[ws-interception-config]').forEach(s => s.remove());
